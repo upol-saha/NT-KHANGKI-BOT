@@ -3,7 +3,7 @@ const axios = require("axios");
 const path = require("path");
 const { getPrefix } = global.utils;
 const { commands, aliases } = global.GoatBot;
-const doNotDelete ="『 NAXO V2 | UPoL🐔 』";
+const doNotDelete ="『 UPoL🐔 』";
 /** 
 * @author NTKhang
 * @author: do not delete it
@@ -42,9 +42,6 @@ module.exports = {
 ╰─✧ hecai 
 ╰─✧ gemini
 
-╭─『 VOICE AI 』
-╰─✧ vai
-
 ╭─『 IMAGINATION 』
 ╰─✧ imagine
 ╰─✧ flux
@@ -54,23 +51,18 @@ module.exports = {
 ╰─✧ mj
 
 ╭─『 ANIME IMAGINATION 』
-╰─✧ aniv2
-╰─✧ niy
-╰─✧ xl
+╰─✧ cr [ aniv2, xl & niy ]
 
 ╭─『 USER 』
 ╰─✧ help
 ╰─✧ prefix
 
 ╭─『 UPTIME 』
-╰─✧ u
-
-╭─『 MEDIA 』
-╰─✧ yt \n\n╭─『  » Total Cmds %4 cmds.\n╰─ » Type %5help <cmd> to learn.\n╰─ %6\n╰───────────◊`,
-      help2: "%1├───────✧\n│ » Currently, the bot has %2 commands that can be used\n│ » Total Cmds: %3 \n│ %4\n╰─────────────✧",
+╰─✧ up\n\n╭─『  » Total Cmds %4 cmds.\n╰─ » Type %5help <cmd> to learn.\n╰─ %6\n╰───────────◊`,
+      help2: "%1├───────✧\n╰─ » Currently, the bot has %2 commands that can be used\n╰─ » Total Cmds: %3 \n╰─ %4\n",
       commandNotFound: "Command \"%1\" does not exist",
-      getInfoCommand: "✧ ─── NAME ──── ✧\n » %1\n✧ ─── INFO ─── ✧\n » Author: %8\n » Description: %2\n\✧ ─── Usage ─── ✧\n%9\n✧───────✧",
-      onlyInfo: "✧── INFO ────✧\n│ Command name: %1\n Version: %5\n│ Role: %6\n│ Author: %8\n✧─────────────✧",
+      getInfoCommand: "✧ ─── NAME ──── ✧\n » %1\n✧ ─── INFO ─── ✧\n » Author: %8\n » Description: %2\n\✧ ─── Usage ─── ✧\n%9",
+      onlyInfo: "✧── INFO ────✧\n╰─✧ Command name: %1\n╰─✧ Version: %5\n╰─✧ Role: %6\n╰─✧ Author: %8",
       onlyUsage: "✧── USAGE ────✧\n│%1\n✧─────────────✧",
       onlyAlias: "✧── ALIAS ────✧\n│ Other names: %1\n│ Other names in your group: %2\n✧─────────────✧",
       onlyRole: "✧── ROLE ────✧\n│%1\n✧─────────────✧",
