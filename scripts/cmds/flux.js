@@ -24,9 +24,9 @@ module.exports = {
       return api.sendMessage("⚠️ Please specify a valid model: `flux-dev`, `flux-schnell`, or `flux-realismLora`.", event.threadID);
     }
     if (!prompt) {
-      return api.sendMessage("❗ Please provide a prompt after specifying the model.", event.threadID);
+      return message.reply("❗ Please provide a prompt after specifying the model.", event.threadID);
     }
-    api.sendMessage("Please wait....⏳", event.threadID, event.messageID);
+    await message.reply("Please wait....⏳", event.threadID, event.messageID);
     try {
       const imagineApiUrl = models[model];
       const modelName = model.replace("-", " ").toUpperCase();
@@ -40,7 +40,7 @@ module.exports = {
       const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated.png`);
       fs.writeFileSync(imagePath, Buffer.from(imagineResponse.data, "binary"));
       const stream = fs.createReadStream(imagePath);
-      api.sendMessage({
+      message.reply({
         body: `✅ Image generated successfully\n🎨 Using the model: ( ${modelName} ) model`,
         attachment: stream
       }, event.threadID, () => {
