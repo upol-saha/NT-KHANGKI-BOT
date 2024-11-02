@@ -47,15 +47,15 @@ module.exports = {
     let categoryName;
     switch (category) {
       case "schnell":
-        apiUrl = https://upol-meaw-meaw-fluxx.onrender.com/flux?prompt=${encodeURIComponent(prompt)};
+        apiUrl = `https://upol-meaw-meaw-fluxx.onrender.com/flux?prompt=${encodeURIComponent(prompt)}`;
         categoryName = "SCHNELL";
         break;
       case "dev":
-        apiUrl = https://upol-meaw-newapi.onrender.com/flux/v2?prompt=${encodeURIComponent(prompt)};
+        apiUrl = `https://upol-meaw-newapi.onrender.com/flux/v2?prompt=${encodeURIComponent(prompt)}`;
         categoryName = "DEV";
         break;
       case "realismlora":
-        apiUrl = https://upol-flux-realismlora.onrender.com/flux/realismlora?prompt=${encodeURIComponent(prompt)};
+        apiUrl = `https://upol-flux-realismlora.onrender.com/flux/realismlora?prompt=${encodeURIComponent(prompt)}`;
         categoryName = "REALISMLORA";
         break;
       default:
@@ -77,7 +77,7 @@ module.exports = {
         fs.mkdirSync(cacheFolderPath);
       }
 
-      const imagePath = path.join(cacheFolderPath, ${Date.now()}_generated.png);
+      const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated.png`);
       fs.writeFileSync(imagePath, Buffer.from(imagineResponse.data, "binary"));
       
       const stream = fs.createReadStream(imagePath);
@@ -91,7 +91,7 @@ module.exports = {
       await message.unsend(waitingMessageID);
 
       await message.reply({
-        body: ✅ | Generated image\n📂 Model: ${categoryName}\n⏱️ Time to gen: ${generationTime} seconds\n📊 Usage count: ${usageData[userId]},
+        body: `✅ | Generated image\n📂 Model: ${categoryName}\n⏱️ Time to gen: ${generationTime} seconds\n📊 Usage count: ${usageData[userId]}`,
         attachment: stream
       });
       fs.unlinkSync(imagePath);
