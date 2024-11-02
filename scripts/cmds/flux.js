@@ -19,7 +19,7 @@ module.exports = {
     category: "media",
     guide: { 
        en: "{pn} <modelName> <prompt>"
-       + "\n Model's Name:" +
+       + "\n Model's Name:\n" +
        "\n1.dev" +
        "\n2.schnell" + 
        "\n3.realismlora"
