@@ -23,20 +23,20 @@ module.exports = {
 
         const songName = args.join(' ');
 
-        const searchingMessage = await message.reply(Searching for "${songName}"...);
+        const searchingMessage = await message.reply(`Searching for "${songName}"...`);
 
         try {
-            const response = await axios.get(https://upol-search.onrender.com/yt-audio?name=${encodeURIComponent(songName)});
+            const response = await axios.get(`https://upol-search.onrender.com/yt-audio?name=${encodeURIComponent(songName)}`);
             const songData = response.data;
 
             await message.unsend(searchingMessage.messageID);
-            const updatedSearchingMessage = await message.reply(🎶 Found: ${songData.title}\nPlay Time: ${songData.duration});
+            const updatedSearchingMessage = await message.reply(`🎶 Found: ${songData.title}\nPlay Time: ${songData.duration}`);
 
-            const songInfoMessage = 🎶 Now playing: ${songData.title}\n
-                + Artist: ${songData.artist}\n
-                + Album: ${songData.album}\n
-                + Channel Name: ${songData.channelName}\n
-                + Views: ${songData.views}\n;
+            const songInfoMessage = `🎶 Now playing: ${songData.title}\n`
+                + `Artist: ${songData.artist}\n`
+                + `Album: ${songData.album}\n`
+                + `Channel Name: ${songData.channelName}\n`
+                + `Views: ${songData.views}\n`;
 
             const audioStream = await axios({
                 url: songData.downloadUrl,
