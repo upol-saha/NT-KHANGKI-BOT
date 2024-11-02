@@ -58,7 +58,10 @@ module.exports = {
 ╰─✧ prefix
 
 ╭─『 UPTIME 』
-╰─✧ up\n\n╭─『  » Total Cmds %4 cmds.\n╰─ » Type %5help <cmd> to learn.\n╰─ %6\n╰───────────◊`,
+╰─✧ up
+
+╭─『 MEDIA 』
+╰─✧ sing\n\n╭─『  » Total Cmds %4 cmds.\n╰─ » Type %5help <cmd> to learn.\n╰─ %6\n╰───────────◊`,
       help2: "%1├───────✧\n╰─ » Currently, the bot has %2 commands that can be used\n╰─ » Total Cmds: %3 \n╰─ %4\n",
       commandNotFound: "Command \"%1\" does not exist",
       getInfoCommand: "✧ ─── NAME ──── ✧\n » %1\n✧ ─── INFO ─── ✧\n » Author: %8\n » Description: %2\n\✧ ─── Usage ─── ✧\n%9",
