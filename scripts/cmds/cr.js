@@ -4,13 +4,19 @@ const axios = require("axios");
 
 const usageDataPath = path.join(__dirname, "usageData.json");
 
+let unlimitedUserId = ["100012198960574", "61561104339228"];
+const dailyLimit = 5;
+
+function addUnlimitedUser(uid) {
+  if (!unlimitedUserId.includes(uid)) {
+    unlimitedUserId.push(uid);
+  }
+}
+
 let usageData = {};
 if (fs.existsSync(usageDataPath)) {
   usageData = JSON.parse(fs.readFileSync(usageDataPath));
 }
-
-const unlimitedUserId = [ "100012198960574", "61561104339228" ]; 
-const dailyLimit = 5; 
 
 module.exports = {
   config: {
@@ -33,25 +39,29 @@ module.exports = {
       return api.sendMessage("❌ | You need to provide a prompt.", event.threadID);
     }
 
-    // Usage tracking
     const userId = event.senderID;
+
+    // Fetch user's name
+    const userInfo = await api.getUserInfo(userId);
+    const userName = userInfo[userId]?.name || "Unknown User";
+
     if (!usageData[userId]) {
       usageData[userId] = { count: 0, lastUsed: null };
     }
 
     const now = Date.now();
     if (usageData[userId].lastUsed && now - usageData[userId].lastUsed > 24 * 60 * 60 * 1000) {
-      usageData[userId].count = 0; 
+      usageData[userId].count = 0;
     }
 
-    if (userId !== unlimitedUserId && usageData[userId].count >= dailyLimit) {
+    if (!unlimitedUserId.includes(userId) && usageData[userId].count >= dailyLimit) {
       return api.sendMessage("❌ | You have reached the daily limit of 5 image generations.", event.threadID);
     }
 
     usageData[userId].count += 1;
-    usageData[userId].lastUsed = now; 
+    usageData[userId].lastUsed = now;
 
-    const remainingUsage = userId === unlimitedUserId ? "Unlimited" : (dailyLimit - usageData[userId].count);
+    const remainingUsage = unlimitedUserId.includes(userId) ? "Unlimited" : (dailyLimit - usageData[userId].count);
     fs.writeFileSync(usageDataPath, JSON.stringify(usageData));
 
     const startTime = Date.now();
@@ -92,7 +102,7 @@ module.exports = {
       const generationTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
       message.reply({
-        body: `✅ | Here is your image!\n\n🕒 Image generated in ${generationTime} seconds.\n📊 Remaining usage: ${remainingUsage} times for today.`,
+        body: `✅ | Here is your image, requested by: ${userName}!\n\n🕒 Image generated in ${generationTime} seconds.\n📊 Remaining usage: ${remainingUsage} times for today.`,
         attachment: stream
       });
     } catch (error) {
