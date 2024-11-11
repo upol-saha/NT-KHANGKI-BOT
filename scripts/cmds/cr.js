@@ -25,23 +25,22 @@ module.exports = {
     version: "1.0",
     role: 0,
     category: "AI",
-    guide: "{pn} <category> <prompt> --ar 16:9\nCategories: aniv2, xl, niy",
+    guide: "{pn} <category> <prompt> --ar 16:9\nCategories: aniv2, dai, dal, xl, niy",
   },
   onStart: async function ({ message, args, api, event }) {
     if (args.length < 2) {
-      return api.sendMessage("❌ | Please provide a category and a prompt.", event.threadID);
+      return message.reply("add model & prompt\n Available models: aniv2, dai, dal, niy, xl", event.threadID);
     }
 
     const category = args[0].toLowerCase();
     const prompt = args.slice(1).join(" ");
 
     if (!prompt) {
-      return api.sendMessage("❌ | You need to provide a prompt.", event.threadID);
+      return message.reply("give prompt.", event.threadID);
     }
 
     const userId = event.senderID;
 
-    // Fetch user's name
     const userInfo = await api.getUserInfo(userId);
     const userName = userInfo[userId]?.name || "Unknown User";
 
@@ -55,7 +54,7 @@ module.exports = {
     }
 
     if (!unlimitedUserId.includes(userId) && usageData[userId].count >= dailyLimit) {
-      return api.sendMessage("❌ | You have reached the daily limit of 5 image generations.", event.threadID);
+      return message.reply("You have reached the daily limit of 5 image generations.", event.threadID);
     }
 
     usageData[userId].count += 1;
@@ -65,7 +64,7 @@ module.exports = {
     fs.writeFileSync(usageDataPath, JSON.stringify(usageData));
 
     const startTime = Date.now();
-    api.sendMessage("Please wait... ⏳", event.threadID, event.messageID);
+    api.sendMessage(`Please wait... ⏳\nUsing model (${category})`, event.threadID, event.messageID);
 
     try {
       let apiUrl;
@@ -80,8 +79,12 @@ module.exports = {
         case "niy":
           apiUrl = `https://upol-nijiy.onrender.com/xl31?prompt=${encodeURIComponent(prompt)}`;
           break;
+        case "dal":
+          apiUrl = `https://upol-crazy.onrender.com/dal?prompt=${encodeURIComponent(prompt)}`;
+        case "dai": 
+          apiUrl = `https://upol-dai-v2.onrender.com/dai?prompt=${encodeURIComponent(prompt)}`;
         default:
-          return api.sendMessage("❌ | Invalid category. Please use one of the following: aniv2, xl, niy.", event.threadID);
+          return api.sendMessage("❌ | Invalid category. Please use one of the following: aniv2, dai, dal, xl, niy.", event.threadID);
       }
 
       const response = await axios.get(apiUrl);
@@ -107,7 +110,7 @@ module.exports = {
       });
     } catch (error) {
       console.error("Error:", error);
-      return api.sendMessage("❌ | An error occurred. Please try again later.", event.threadID);
+      return api.sendMessage("An error occurred. Please try again later.", event.threadID);
     }
   }
 };
