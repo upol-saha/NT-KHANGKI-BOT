@@ -2,103 +2,68 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 
-const usageDataPath = path.join(__dirname, "usageData.json");
-let usageData = {};
-
-if (fs.existsSync(usageDataPath)) {
-  usageData = JSON.parse(fs.readFileSync(usageDataPath));
-}
-
 module.exports = {
   config: {
     name: "flux",
     author: "UPoL",
-    version: "3.2",
+    version: "3.1",
     cooldowns: 5,
     role: 0,
-    category: "media",
-    guide: { 
-       en: "{pn} <modelName> <prompt>"
-       + "\n Model's Name:\n" +
-       "\n1.dev" +
-       "\n2.schnell" + 
-       "\n3.realismlora"
-      }
+    category: "ai",
+    guide: {
+      en: "{pn} <model> <prompt>"
+    },
   },
-  
   onStart: async function ({ message, args, api, event }) {
-    const userId = event.senderID;
+    const model = args[0];
+    const prompt = args.slice(1).join(" ");
 
-    if (!usageData[userId]) {
-      usageData[userId] = 0;
+    if (!model || !prompt) {
+      return message.reply("provide a model and a prompt.", event.threadID);
     }
 
-    if (args.length < 2) {
-      return message.reply("provide modelName or prompt.", event.threadID);
-    }
-    const category = args.shift().toLowerCase();
-    const prompt = args.join(" ");
+    const wait = message.reply("Please wait...⏳", event.threadID, event.messageID);
 
-    if (!prompt) {
-      return message.reply("add prompt.", event.threadID);
-    }
+    let imagineApiUrl;
 
-    let apiUrl;
-    let categoryName;
-    switch (category) {
-      case "schnell":
-        apiUrl = `https://upol-meaw-meaw-fluxx.onrender.com/flux?prompt=${encodeURIComponent(prompt)}`;
-        categoryName = "SCHNELL";
-        break;
-      case "dev":
-        apiUrl = `https://upol-meaw-newapi.onrender.com/flux/v2?prompt=${encodeURIComponent(prompt)}`;
-        categoryName = "DEV";
-        break;
-      case "realismlora":
-        apiUrl = `https://upol-flux-realismlora.onrender.com/flux/realismlora?prompt=${encodeURIComponent(prompt)}`;
-        categoryName = "REALISMLORA";
-        break;
-      default:
-        return api.sendMessage("please use one of the following: 'schnell', 'dev', 'realismlora'.", event.threadID);
+    if (model === "dev") {
+      imagineApiUrl = `https://upol-meaw-newapi.onrender.com/flux/v2?prompt=${encodeURIComponent(prompt)}`;
+    } else if (model === "schnell") {
+      imagineApiUrl = `https://upol-meaw-meaw-fluxx.onrender.com/flux?prompt=${encodeURIComponent(prompt)}`;
+    } else if (model === "realismLora") {
+      imagineApiUrl = `https://upol-flux-realismlora.onrender.com/flux/realismlora?prompt=${encodeURIComponent(prompt)}`;
+    } else {
+      return api.sendMessage("Please choose from: dev, schnell, or realismLora.", event.threadID);
     }
-
-    const waitingMessage = await api.sendMessage("Please wait....⏳", event.threadID, event.messageID);
-    
-    const waitingMessageID = waitingMessage.messageID;
 
     try {
-      const startTime = Date.now();
-      const imagineResponse = await axios.get(apiUrl, {
+      const startTime = Date.now(); 
+      const imagineResponse = await axios.get(imagineApiUrl, {
         responseType: "arraybuffer"
       });
+      const endTime = Date.now(); 
+
+      const timeTaken = ((endTime - startTime) / 1000).toFixed(2); 
+      const requesterName = event.senderID; 
 
       const cacheFolderPath = path.join(__dirname, "cache");
       if (!fs.existsSync(cacheFolderPath)) {
         fs.mkdirSync(cacheFolderPath);
       }
-
       const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated.png`);
       fs.writeFileSync(imagePath, Buffer.from(imagineResponse.data, "binary"));
-      
+
       const stream = fs.createReadStream(imagePath);
-
-      const generationTime = ((Date.now() - startTime) / 1000).toFixed(2);
-
-      usageData[userId] += 1;
-      fs.writeFileSync(usageDataPath, JSON.stringify(usageData));
-
-
-      await message.unsend(waitingMessageID);
-
-      await message.reply({
-        body: `✅ | Generated image\n📂 Model: ${categoryName}\n⏱️ Time to gen: ${generationTime} seconds\n📊 Usage count: ${usageData[userId]}`,
+      message.reply({
+        body: `🖼️ Image generated in ${timeTaken} seconds.\n👤 Requested by: ${requesterName}\n📦 Model used: ${model}`,
         attachment: stream
+      }, event.threadID, () => {
+        fs.unlinkSync(imagePath);
       });
-      fs.unlinkSync(imagePath);
+				message.unsend(wait, event.messageID);
     } catch (error) {
       console.error("Error:", error);
-      await message.unsend(waitingMessageID);
-      api.sendMessage("error", event.threadID);
+      message.reply("An error occurred. Please try again later.", event.threadID, event.messageID);
     }
   }
 };
