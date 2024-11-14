@@ -1,97 +1,138 @@
+const { createCanvas, loadImage } = require('canvas');
 const axios = require('axios');
-const Jimp = require('jimp');
+const fs = require('fs');
+const path = require('path');
 const FormData = require('form-data');
 
 module.exports = {
   config: {
     name: "niji",
-    version: "1.0",
+    aliases: [],
+    version: "1.1",
     author: "UPoL 🐔",
-    role: 0,
-    shortDescription: "Generate and combine 4 images",
-    longDescription: "Generates 4 images based on a prompt, combines them into one image, and uploads it to imgbb.",
+    shortDescription: "Fetch and display images from the API in a collage",
+    longDescription: "Fetches 4 images from the API, uploads them to Imgbb, and allows the user to select one by number.",
     category: "image",
-    guide: "{pn} <prompt>"
-  },
-
-  onStart: async function ({ message, args, api, event }) {
-    const prompt = args.join(" ");
-    const imgbbApiKey = 'cc7534287e3141c514a70ff04d316190';
-
-    if (!prompt) {
-      return message.reply("Please provide a prompt for image generation.", event.threadID);
+    guide: {
+      en: "{p}nijiz <prompt>"
     }
-
-    await message.reply("Generating images, please wait...⏳", event.threadID);
+  },
+  onStart: async function ({ message, event, args, api }) {
+    const imgbbApiKey = "cc7534287e3141c514a70ff04d316190"; // Your Imgbb API key
+    
+    // Send wait message
+    const waitMessage = await message.reply("⏳ Please wait, generating your images...");
 
     try {
-      const response = await axios.get(`https://upol-nijizx-4img.onrender.com/nijizx?prompt=${encodeURIComponent(prompt)}`);
-      const { imageUrls } = response.data;
-
-      if (imageUrls.length !== 4) {
-        return message.reply("Failed to retrieve 4 images.", event.threadID);
-      }
+      // Get the prompt from the user's arguments
+      const prompt = args.join(" ");
       
-      const images = await Promise.all(imageUrls.map(url => Jimp.read(url)));
-      const singleWidth = images[0].getWidth();
-      const singleHeight = images[0].getHeight();
-      const combinedImage = new Jimp(singleWidth * 2, singleHeight * 2);
+      // Check if prompt is provided
+      if (!prompt) {
+        return message.reply("❌ Please provide a prompt. Example: `/nijiz a cat`");
+      }
 
-      combinedImage.composite(images[0], 0, 0)
-                   .composite(images[1], singleWidth, 0)
-                   .composite(images[2], 0, singleHeight)
-                   .composite(images[3], singleWidth, singleHeight);
+      const apiUrl = `https://upol-nijizx-4img.onrender.com/nijizx?prompt=${encodeURIComponent(prompt)}`;
 
-      const buffer = await combinedImage.getBufferAsync(Jimp.MIME_PNG);
+      // Fetch data from the API
+      const { data } = await axios.get(apiUrl);
 
-      const formData = new FormData();
-      formData.append('image', buffer.toString('base64'));
-      const imgbbResponse = await axios.post(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, formData, {
-        headers: formData.getHeaders()
+      // Check if imageUrls is returned correctly
+      if (!data.imageUrls || data.imageUrls.length !== 4) {
+        throw new Error("API response does not contain 4 images.");
+      }
+
+      const imageUrls = data.imageUrls;
+
+      // Function to upload image to Imgbb
+      const uploadToImgbb = async (url) => {
+        try {
+          const response = await axios.get(url, { responseType: 'arraybuffer' });
+          const formData = new FormData();
+          formData.append('image', Buffer.from(response.data, 'binary'), { filename: 'image.png' });
+          const res = await axios.post('https://api.imgbb.com/1/upload', formData, {
+            headers: formData.getHeaders(),
+            params: { key: imgbbApiKey }
+          });
+          return res.data.data.url; // Return the Imgbb URL
+        } catch (error) {
+          console.log(error);
+          throw new Error("Failed to upload image to Imgbb");
+        }
+      };
+
+      // Upload all images to Imgbb
+      const imgbbUrls = await Promise.all(imageUrls.map(url => uploadToImgbb(url)));
+
+      // Load images for collage
+      const images = await Promise.all(imgbbUrls.map(url => loadImage(url)));
+      const canvasWidth = 600;
+      const canvasHeight = 400;
+      const cellWidth = canvasWidth / 2;
+      const cellHeight = canvasHeight / 2;
+
+      const collageCanvas = createCanvas(canvasWidth, canvasHeight);
+      const ctx = collageCanvas.getContext('2d');
+
+      images.forEach((img, index) => {
+        const x = (index % 2) * cellWidth;
+        const y = Math.floor(index / 2) * cellHeight;
+        ctx.drawImage(img, x, y, cellWidth, cellHeight);
       });
 
-      const combinedImageUrl = imgbbResponse.data.data.url;
+      // Save and send collage
+      const cacheFolderPath = path.join(__dirname, 'cache');
+      if (!fs.existsSync(cacheFolderPath)) fs.mkdirSync(cacheFolderPath);
+      const collagePath = path.join(cacheFolderPath, `collage.png`);
+      const out = fs.createWriteStream(collagePath);
+      const stream = collageCanvas.createPNGStream();
+      stream.pipe(out);
 
-      const msg = {
-        body: `Here is your combined image:\nSelect (1-4) images to display in full.`,
-        attachment: images.map((img, index) => ({ attachment: img, caption: `Image ${index + 1}` }))
-      };
-      
-      return message.reply(msg, event.threadID, (error, info) => {
-        if (error) {
-          console.error("Error sending message:", error);
-          return;
-        }
-
-        global.GoatBot.onReply.set(info.messageID, {
-          type: "reply",
-          commandName: "nijizx",
-          author: event.senderID,
-          messageID: info.messageID,
-          imageUrls,
-          combinedImageUrl
+      out.on('finish', async () => {
+        // Delete wait message, send collage
+        await api.deleteMessage(waitMessage.messageID);
+        await message.reply({
+          body: "Choose an image (1-4) by replying with the number.",
+          attachment: fs.createReadStream(collagePath)
         });
+
+        // Handle user's selection after they reply
+        const selectionListener = async (event) => {
+          if (event.senderID === message.senderID && /^[1-4]$/.test(event.body)) {
+            const choice = parseInt(event.body, 10) - 1;
+
+            try {
+              // Send the selected image from Imgbb
+              const selectedImageUrl = imgbbUrls[choice];
+              await message.reply({
+                body: `Here's image ${event.body}:`,
+                attachment: selectedImageUrl
+              });
+              // Remove the listener after the image is sent
+              api.removeListener("message", selectionListener);
+            } catch (error) {
+              console.error("Error fetching selected image:", error);
+              message.reply("❌ Failed to retrieve the selected image.");
+            }
+          } else {
+            // In case the user replies with an invalid selection
+            message.reply("❌ Invalid selection! Please reply with a number between 1 and 4.");
+          }
+        };
+
+        // Listen for the user's reply (1-4 selection)
+        api.listenMqtt((err, replyEvent) => {
+          if (err) return console.error(err);
+          if (replyEvent.type === 'message' && replyEvent.threadID === message.threadID) {
+            selectionListener(replyEvent);
+          }
+        });
+
       });
     } catch (error) {
-      console.error("Error during image generation or upload:", error);
-      api.sendMessage("An error occurred while generating or uploading images. Please try again later.", event.threadID);
+      console.error("Error:", error);
+      // Send more specific error message
+      message.reply(`❌ | An error occurred: ${error.message || error}`);
     }
-  },
-
-  onReply: async function ({ event, api, Reply }) {
-    const { imageUrls, author } = Reply;
-    if (event.senderID !== author) return;
-
-    const selectedImageIndex = parseInt(event.body) - 1;
-    if (isNaN(selectedImageIndex) || selectedImageIndex < 0 || selectedImageIndex >= imageUrls.length) {
-      return message.reply("Invalid selection. Please enter a number from 1 to 4.", event.threadID);
-    }
-
-    const selectedImageUrl = imageUrls[selectedImageIndex];
-    message.reply({
-      body: `Here is your selected image:`,
-      attachment: await global.utils.getStreamFromURL(selectedImageUrl)
-    }, event.threadID);
   }
 };
-
