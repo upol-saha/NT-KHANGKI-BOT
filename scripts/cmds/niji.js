@@ -29,7 +29,7 @@ module.exports = {
       
       // Check if prompt is provided
       if (!prompt) {
-        return message.reply("❌ Please provide a prompt. Example: `/nijiz a cat`");
+        return message.reply("add prompt");
       }
 
       const apiUrl = `https://upol-nijizx-4img.onrender.com/nijizx?prompt=${encodeURIComponent(prompt)}`;
