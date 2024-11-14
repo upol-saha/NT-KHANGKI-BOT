@@ -78,7 +78,7 @@ module.exports = {
         apiUrl = `https://upol-dai-v2.onrender.com/dai?prompt=${encodeURIComponent(prompt)}`;
         break;
       case "dal":
-        apiUrl = `https://upol-dal.onrender.com/dal?prompt=${encodeURIComponent(prompt)}`;
+        apiUrl = `https://upol-crazy.onrender.com/dal?prompt=${encodeURIComponent(prompt)}`;
         break;
       default:
         return api.sendMessage("This model is'nt available.\nAvailable models: xl, niy, aniv2, dai, dal.", event.threadID);
