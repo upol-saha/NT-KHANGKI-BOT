@@ -22,7 +22,7 @@ module.exports = {
       return message.reply("provide a model and a prompt.\nmodel actions: dev, schnell, realismLora & minj-lora", event.threadID);
     }
 
-    const wait = message.reply("Please wait...⏳", event.threadID, event.messageID);
+    const wait = message.reply(`Please wait...⏳\nGenerating with model: [  ${model}  ]...`, event.threadID, event.messageID);
 
     let imagineApiUrl;
 
@@ -62,7 +62,7 @@ module.exports = {
       }, event.threadID, () => {
         fs.unlinkSync(imagePath);
       });
-				message.unsend(wait, event.messageID);
+       message.unsend(wait, event.messageID);
     } catch (error) {
       console.error("Error:", error);
       message.reply("An error occurred. Please try again later.", event.threadID, event.messageID);
