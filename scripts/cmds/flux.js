@@ -32,8 +32,10 @@ module.exports = {
       imagineApiUrl = `https://upol-meaw-meaw-fluxx.onrender.com/flux?prompt=${encodeURIComponent(prompt)}`;
     } else if (model === "realismLora") {
       imagineApiUrl = `https://upol-flux-realismlora.onrender.com/flux/realismlora?prompt=${encodeURIComponent(prompt)}`;
+    } else if (model === "mini-lora") {
+      imagineApiUrl = `https://huggifk-flux-extra.onrender.com/flux?prompt=${encodeURIComponent(prompt)}`;
     } else {
-      return api.sendMessage("Please choose from: dev, schnell, or realismLora.", event.threadID);
+      return api.sendMessage("Please choose from: dev, schnell, realismLora or mini-lora.", event.threadID);
     }
 
     try {
