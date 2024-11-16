@@ -4,7 +4,7 @@ const axios = require("axios");
 const { promises: fsp } = fs;
 
 const usageDataPath = path.join(__dirname, "usageData.json");
-const unlimitedUserId = "100012198960574"; 
+const unlimitedUserId = "61561104339228"; 
 const dailyLimit = 5; 
 
 async function loadUsageData() {
