@@ -19,7 +19,7 @@ module.exports = {
     const prompt = args.slice(1).join(" ");
 
     if (!model || !prompt) {
-      return message.reply("provide a model and a prompt.", event.threadID);
+      return message.reply("provide a model and a prompt.\nmodel actions: dev, schnell, realismLora & minj-lora", event.threadID);
     }
 
     const wait = message.reply("Please wait...⏳", event.threadID, event.messageID);
