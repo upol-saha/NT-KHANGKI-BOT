@@ -47,8 +47,8 @@ module.exports = {
 ╰─✧ flux
 ╰─✧ prodia
 
-╭─『 MJ 』 
-╰─✧ mj
+╭─『 4IMG FLUX 』 
+╰─✧ flux2
 
 ╭─『 ANIME IMAGINATION 』
 ╰─✧ cr 
