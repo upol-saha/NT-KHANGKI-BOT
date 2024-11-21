@@ -39,16 +39,13 @@ module.exports = {
   langs: {
     en: {
       help: `╭─『 AI 』
-╰─✧ hecai 
+╰─✧ hercai 
 ╰─✧ gemini
 
 ╭─『 IMAGINATION 』
 ╰─✧ imagine
 ╰─✧ flux
 ╰─✧ prodia
-
-╭─『 4IMG FLUX 』 
-╰─✧ flux2
 
 ╭─『 ANIME IMAGINATION 』
 ╰─✧ cr 
