@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
+
 module.exports = {
   config: {
     name: "imagine",
@@ -21,29 +22,43 @@ module.exports = {
     if (this.config.author !== obfuscatedAuthor) {
       return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
     }
+
     const prompt = args.join(" ");
     const apikey = 'UPoLxyzFM-69vsg';
+
     if (!prompt) {
       return message.reply("👀 Please provide a prompt.", event.threadID);
     }
-    api.sendMessage("⏳ Generating your imagination....", event.threadID, event.messageID);
+
+    const wait = messagw.reply("⏳ Generating your imagination....", event.threadID, event.messageID);
+    const startTime = Date.now(); 
+
     try {
       const imagineApiUrl = `https://upol-ai-docs.onrender.com/imagine?prompt=${encodeURIComponent(prompt)}&apikey=${apikey}`;
       const imagineResponse = await axios.get(imagineApiUrl, {
         responseType: "arraybuffer"
       });
+
       const cacheFolderPath = path.join(__dirname, "cache");
       if (!fs.existsSync(cacheFolderPath)) {
         fs.mkdirSync(cacheFolderPath);
       }
+
       const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated_image.png`);
       fs.writeFileSync(imagePath, Buffer.from(imagineResponse.data, "binary"));
+
       const stream = fs.createReadStream(imagePath);
+
+      const endTime = Date.now(); 
+      const timeTaken = ((endTime - startTime) / 1000).toFixed(2); 
+
+			message.unsend(wait, event.messageID);
+      
       message.reply({
-        body: "Generated successfully!",
+        body: `✅ Generated successfully in ${timeTaken} seconds!`,
         attachment: stream
       }, event.threadID, () => {
-        fs.unlinkSync(imagePath);
+        fs.unlinkSync(imagePath); 
       });
     } catch (error) {
       console.error("Error:", error);
