@@ -30,7 +30,7 @@ module.exports = {
       return message.reply("👀 Please provide a prompt.", event.threadID);
     }
 
-    const wait = messagw.reply("⏳ Generating your imagination....", event.threadID, event.messageID);
+    const wait = message.reply("⏳ Generating your imagination....", event.threadID, event.messageID);
     const startTime = Date.now(); 
 
     try {
@@ -51,8 +51,8 @@ module.exports = {
 
       const endTime = Date.now(); 
       const timeTaken = ((endTime - startTime) / 1000).toFixed(2); 
-
-			message.unsend(wait, event.messageID);
+ 
+      message.unsend(wait, event.messageID);
       
       message.reply({
         body: `✅ Generated successfully in ${timeTaken} seconds!`,
