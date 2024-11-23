@@ -29,7 +29,7 @@ module.exports = {
         }
     },
 
-    onStart: async function ({ message, args, api }) {
+    onStart: async function ({ message, args }) {
         const userID = message.senderID;
 
         // Ensure the songs.json file exists
@@ -83,7 +83,6 @@ module.exports = {
                     if (error) return console.error(error);
                     global.GoatBot.onReply.set(info.messageID, {
                         type: 'list',
-                        commandName: this.config.name,
                         userID,
                         songs: userSongs
                     });
